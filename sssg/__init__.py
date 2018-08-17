@@ -26,23 +26,58 @@ class Templater(object):
         self.jinja = Environment(loader=FileSystemLoader(template_paths))
         self.jinja.filters["markdown"] = lambda text: Markup(self.md.convert(text))
 
+    def read_metadata(self, content):
+        '''Attempt to read metadata from a file.'''
+        metadict = {}
+
+        # Find the split marker, if it exists
+        splitline = -1
+        i = 0
+        for line in content.split("\n"):
+            aline = line.rstrip()
+            if aline == "---===---":
+                splitline = i
+                break
+            i = i + 1
+
+        # Doesn't exist so return the whole content with no metadata
+        if splitline < 0:
+            return (content, metadict)
+
+        # Read the metadata and split off the remaining content
+        # Metadata is simple "key: value" format
+        remaining_content = ""
+        i = 0
+        for line in content.split("\n"):
+            if i < splitline:
+                spl = line.split(":", 1)
+                if len(spl) > 1:
+                    metadict[spl[0]] = spl[1].lstrip()
+            elif i > splitline:
+                remaining_content = remaining_content + line + "\n"
+            i = i + 1
+
+        return (remaining_content, metadict)
+
     def generate_string(self, content, **kwargs):
         '''Generate output given a template string and content.'''
-        template = self.jinja.from_string(content)
-        return template.render(**kwargs)
+        (con, meta) = self.read_metadata(content)
+        template = self.jinja.from_string(con)
+        return (template.render(**meta, **kwargs), meta)
 
     def generate_html(self, content, **kwargs):
         '''Generate output given template HTML content.'''
-        return self.generate_string(content, **kwargs)
+        (con, meta) = self.generate_string(content, **kwargs)
+        return con
 
     def generate_markdown(self, content, **kwargs):
         '''Generate output given template Markdown content.'''
         # Convert Markdown to HTML
-        md_content = self.generate_string(content, **kwargs)
+        (con, meta) = self.generate_string(content, **kwargs)
 
         # Output template as final HTML
         template = self.jinja.get_template("markdown.html")
-        return template.render(md_content=md_content, **kwargs)
+        return template.render(md_content=con, **meta, **kwargs)
 
 
 def process_template(tmpl, source_filename, dest_filename, **kwargs):
