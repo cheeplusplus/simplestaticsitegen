@@ -114,7 +114,8 @@ def process_directory(source_dir, dest_dir, wipe_first=False):
             os.makedirs(dest_dir_path)
 
         # Run anything ending in .j2 as a template
-        if src_path.endswith(".j2"):
+        # Assume .md files are templates so they get turned into HTML
+        if src_path.endswith(".j2") or src_path.endswith(".md"):
             dest_path_pure = dest_path.with_suffix("")
 
             ptr = ""
@@ -122,7 +123,7 @@ def process_directory(source_dir, dest_dir, wipe_first=False):
             if ptr_height > 1:
                 ptr = "".join(map(lambda x: "../", range(ptr_height - 1)))
 
-            if src_path.endswith(".md.j2"):
+            if src_path.endswith(".md.j2") or src_path.endswith(".md"):
                 # Process Markdown template
                 dest_path_pure = dest_path_pure.with_suffix(".html")
                 process_md_template(templater, src_path, dest_path_pure, path_to_root=ptr)
