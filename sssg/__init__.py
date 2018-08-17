@@ -4,6 +4,7 @@ import shutil
 import pathlib
 from jinja2 import Environment, FileSystemLoader, Markup
 from markdown import Markdown
+import frontmatter
 
 
 class Templater(object):
@@ -28,36 +29,8 @@ class Templater(object):
 
     def read_metadata(self, content):
         '''Attempt to read metadata from a file.'''
-        metadict = {}
-
-        # Find the split marker, if it exists
-        splitline = -1
-        i = 0
-        for line in content.split("\n"):
-            aline = line.rstrip()
-            if aline == "---===---":
-                splitline = i
-                break
-            i = i + 1
-
-        # Doesn't exist so return the whole content with no metadata
-        if splitline < 0:
-            return (content, metadict)
-
-        # Read the metadata and split off the remaining content
-        # Metadata is simple "key: value" format
-        remaining_content = ""
-        i = 0
-        for line in content.split("\n"):
-            if i < splitline:
-                spl = line.split(":", 1)
-                if len(spl) > 1:
-                    metadict[spl[0]] = spl[1].lstrip()
-            elif i > splitline:
-                remaining_content = remaining_content + line + "\n"
-            i = i + 1
-
-        return (remaining_content, metadict)
+        post = frontmatter.loads(content)
+        return (post.content, post.metadata)
 
     def generate_string(self, content, **kwargs):
         '''Generate output given a template string and content.'''
