@@ -48,8 +48,12 @@ class Templater(object):
         # Convert Markdown to HTML
         (con, meta) = self.generate_string(content, **kwargs)
 
+        template_name = "markdown.html"
+        if "template_name" in meta:
+            template_name = "{}.html".format(meta["template_name"])
+
         # Output template as final HTML
-        template = self.jinja.get_template("markdown.html")
+        template = self.jinja.get_template(template_name)
         return template.render(md_content=con, **meta, **kwargs)
 
 
