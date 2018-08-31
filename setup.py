@@ -19,4 +19,7 @@ setuptools.setup(
         "Operating System :: OS Independent",
     ),
     install_requires=["jinja2", "markdown", "python-frontmatter"],
+    entry_points={
+        "console_scripts": ["sssg = sssg.__main__:main"]
+    }
 )

@@ -1,10 +1,8 @@
-import argparse
 import os
 import shutil
 import pathlib
 import json
 from jinja2 import Environment, FileSystemLoader, Markup
-from jinja2.ext import Extension
 from markdown import Markdown
 import frontmatter
 
@@ -148,16 +146,3 @@ def process_directory(source_dir, dest_dir, wipe_first=False):
         else:
             # Copy everything else
             shutil.copy2(src_path, dest_path)
-
-
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser()
-    parser.add_argument("source", help="Source directory")
-    parser.add_argument("destination", help="Destination directory")
-    parser.add_argument("-d", "--delete", action="store_true", help="Delete contents of destination directory before copying")
-
-    args = parser.parse_args()
-
-    print("Running.")
-    process_directory(args.source, args.destination, args.delete)
-    print("Done.")
