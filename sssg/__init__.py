@@ -2,7 +2,9 @@ import argparse
 import os
 import shutil
 import pathlib
+import json
 from jinja2 import Environment, FileSystemLoader, Markup
+from jinja2.ext import Extension
 from markdown import Markdown
 import frontmatter
 
@@ -35,8 +37,15 @@ class Templater(object):
     def generate_string(self, content, **kwargs):
         '''Generate output given a template string and content.'''
         (con, meta) = self.read_metadata(content)
+
+        # Handle load_json
+        extra_data = {}
+        if "load_json" in meta:
+            with open(meta["load_json"]) as f:
+                extra_data = json.load(f)
+
         template = self.jinja.from_string(con)
-        return (template.render(**meta, **kwargs), meta)
+        return (template.render(**kwargs, **meta, **extra_data), meta)
 
     def generate_html(self, content, **kwargs):
         '''Generate output given template HTML content.'''
@@ -48,13 +57,15 @@ class Templater(object):
         # Convert Markdown to HTML
         (con, meta) = self.generate_string(content, **kwargs)
 
+        # Metadata processing
+        # Handle template_name
         template_name = "markdown.html"
         if "template_name" in meta:
             template_name = "{}.html".format(meta["template_name"])
 
         # Output template as final HTML
         template = self.jinja.get_template(template_name)
-        return template.render(md_content=con, **meta, **kwargs)
+        return template.render(md_content=con, **kwargs, **meta)
 
 
 def process_template(tmpl, source_filename, dest_filename, **kwargs):
