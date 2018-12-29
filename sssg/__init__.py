@@ -1,6 +1,6 @@
 import os
 import shutil
-import pathlib
+from pathlib import Path
 import inspect
 import json
 from jinja2 import Environment, FileSystemLoader, Markup
@@ -93,6 +93,21 @@ def process_md_template(tmpl, source_filename, dest_filename, **kwargs):
         f.write(output)
 
 
+def restructure_file_as_dir(current_path, new_filename="index.html"):
+    '''Restructure "file.md" as "file/index.html", imitating Jekyll'''
+    basedir = current_path.parent
+    filename = current_path.stem
+    if filename == "index":
+        # Don't modify an index file
+        return current_path
+
+    target_dir = basedir / filename
+    if not target_dir.exists():
+        target_dir.mkdir()
+
+    return target_dir / new_filename
+
+
 def find_files(dir):
     '''Find files in the source directory.'''
 
@@ -104,28 +119,32 @@ def find_files(dir):
                 yield from find_files(entry.path)
 
 
-def process_directory(source_dir, dest_dir, wipe_first=False):
+def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=False):
     '''Process a source directory and save results to destination.'''
 
+    # Validate source directory
     source_dir = os.path.abspath(source_dir)
-    if not os.path.exists(source_dir):
+    source_path = Path(source_dir)
+    if not source_path.exists():
         raise FileNotFoundError("Source directory does not exist.")
-    source_path = pathlib.Path(source_dir)
 
+    # Find all files in source
     contents = find_files(source_dir)
 
+    # Handle destination directory
     dest_dir = os.path.abspath(dest_dir)
     if wipe_first:
         shutil.rmtree(dest_dir)
 
+    # Prepare templater
     templater = Templater(source_dir)
 
     # Copy to output directory
     for src_path in contents:
         # Get the target path
-        p = pathlib.Path(src_path)
+        p = Path(src_path)
         pp = p.parts[len(source_path.parts):]
-        dest_path = pathlib.Path(dest_dir, *pp)
+        dest_path = Path(dest_dir, *pp)
 
         # Make sure it exists
         dest_dir_path = os.path.dirname(dest_path)
@@ -145,9 +164,13 @@ def process_directory(source_dir, dest_dir, wipe_first=False):
             if src_path.endswith(".md.j2") or src_path.endswith(".md"):
                 # Process Markdown template
                 dest_path_pure = dest_path_pure.with_suffix(".html")
+                if files_as_dirs:
+                    dest_path_pure = restructure_file_as_dir(dest_path_pure)
                 process_md_template(templater, src_path, dest_path_pure, path_to_root=ptr)
             else:
                 # Process default template
+                if files_as_dirs:
+                    dest_path_pure = restructure_file_as_dir(dest_path_pure)
                 process_template(templater, src_path, dest_path_pure, path_to_root=ptr)
         else:
             # Copy everything else
