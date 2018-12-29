@@ -1,6 +1,7 @@
 import os
 import shutil
 import pathlib
+import inspect
 import json
 from jinja2 import Environment, FileSystemLoader, Markup
 from markdown import Markdown
@@ -15,14 +16,14 @@ class Templater(object):
             'markdown.extensions.nl2br'
         ])
 
-        self.source_dir = source_dir
         template_paths = []
 
         template_dir = os.path.join(source_dir, ".templates")
         if os.path.exists(template_dir):
             template_paths.append(template_dir)
 
-        default_template_dir = os.path.join(os.path.dirname(__file__), "default_templates")
+        cur_lib_dir = os.path.dirname(inspect.getabsfile(Templater))
+        default_template_dir = os.path.join(cur_lib_dir, "default_templates")
         template_paths.append(default_template_dir)
 
         self.jinja = Environment(loader=FileSystemLoader(template_paths))
