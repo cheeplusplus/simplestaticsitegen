@@ -5,13 +5,13 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="sssg",
-    version="0.0.1",
+    version="0.0.2",
     author="AndrewNeo",
     author_email="andrew@andrewneo.com",
     description="Simple static site generator with Jinja",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/pypa/simplestaticsitegen",
+    url="https://github.com/AndrewNeo/simplestaticsitegen",
     packages=setuptools.find_packages(),
     classifiers=(
         "Programming Language :: Python :: 3",

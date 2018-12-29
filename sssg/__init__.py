@@ -15,6 +15,7 @@ class Templater(object):
             'markdown.extensions.nl2br'
         ])
 
+        self.source_dir = source_dir
         template_paths = []
 
         template_dir = os.path.join(source_dir, ".templates")
@@ -32,28 +33,29 @@ class Templater(object):
         post = frontmatter.loads(content)
         return (post.content, post.metadata)
 
-    def generate_string(self, content, **kwargs):
+    def generate_string(self, content, source_filename, **kwargs):
         '''Generate output given a template string and content.'''
         (con, meta) = self.read_metadata(content)
 
         # Handle load_json
         extra_data = {}
         if "load_json" in meta:
-            with open(meta["load_json"]) as f:
+            p = os.path.join(os.path.dirname(source_filename), meta["load_json"])
+            with open(p, "r") as f:
                 extra_data = json.load(f)
 
         template = self.jinja.from_string(con)
         return (template.render(**kwargs, **meta, **extra_data), meta)
 
-    def generate_html(self, content, **kwargs):
+    def generate_html(self, content, source_filename, **kwargs):
         '''Generate output given template HTML content.'''
-        (con, meta) = self.generate_string(content, **kwargs)
+        (con, meta) = self.generate_string(content, source_filename, **kwargs)
         return con
 
-    def generate_markdown(self, content, **kwargs):
+    def generate_markdown(self, content, source_filename, **kwargs):
         '''Generate output given template Markdown content.'''
         # Convert Markdown to HTML
-        (con, meta) = self.generate_string(content, **kwargs)
+        (con, meta) = self.generate_string(content, source_filename, **kwargs)
 
         # Metadata processing
         # Handle template_name
@@ -72,7 +74,7 @@ def process_template(tmpl, source_filename, dest_filename, **kwargs):
     with open(source_filename, "r") as f:
         content = f.read()
 
-    output = tmpl.generate_html(content, **kwargs)
+    output = tmpl.generate_html(content, source_filename, **kwargs)
 
     with open(dest_filename, "w") as f:
         f.write(output)
@@ -84,7 +86,7 @@ def process_md_template(tmpl, source_filename, dest_filename, **kwargs):
     with open(source_filename, "r") as f:
         content = f.read()
 
-    output = tmpl.generate_markdown(content, **kwargs)
+    output = tmpl.generate_markdown(content, source_filename, **kwargs)
 
     with open(dest_filename, "w") as f:
         f.write(output)
@@ -104,11 +106,14 @@ def find_files(dir):
 def process_directory(source_dir, dest_dir, wipe_first=False):
     '''Process a source directory and save results to destination.'''
 
+    source_dir = os.path.abspath(source_dir)
     if not os.path.exists(source_dir):
         raise FileNotFoundError("Source directory does not exist.")
+    source_path = pathlib.Path(source_dir)
 
     contents = find_files(source_dir)
 
+    dest_dir = os.path.abspath(dest_dir)
     if wipe_first:
         shutil.rmtree(dest_dir)
 
@@ -118,7 +123,7 @@ def process_directory(source_dir, dest_dir, wipe_first=False):
     for src_path in contents:
         # Get the target path
         p = pathlib.Path(src_path)
-        pp = p.parts[1:]
+        pp = p.parts[len(source_path.parts):]
         dest_path = pathlib.Path(dest_dir, *pp)
 
         # Make sure it exists
@@ -132,7 +137,7 @@ def process_directory(source_dir, dest_dir, wipe_first=False):
             dest_path_pure = dest_path.with_suffix("")
 
             ptr = ""
-            ptr_height = len(p.parts) - 1
+            ptr_height = len(pp)
             if ptr_height > 1:
                 ptr = "".join(map(lambda x: "../", range(ptr_height - 1)))
 
