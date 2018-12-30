@@ -101,19 +101,28 @@ def process_md_template(tmpl, source_filename, dest_filename, **kwargs):
         f.write(output)
 
 
-def restructure_file_as_dir(current_path, new_filename="index.html"):
+def restructure_file_as_dir(current_path, current_height=0, new_filename="index.html"):
     '''Restructure "file.md" as "file/index.html", imitating Jekyll'''
     basedir = current_path.parent
     filename = current_path.stem
+
+    if filename != "index":
+        # Only increment height if not an index file
+        current_height = current_height + 1
+
+    ptr = ""
+    if current_height > 1:
+        ptr = "".join(map(lambda x: "../", range(current_height - 1)))
+
     if filename == "index":
         # Don't modify an index file
-        return current_path
+        return (current_path, ptr)
 
     target_dir = basedir / filename
     if not target_dir.exists():
         target_dir.mkdir()
 
-    return target_dir / new_filename
+    return (target_dir / new_filename, ptr)
 
 
 def find_files(dir, ignore_paths=None, relative_path=""):
@@ -179,17 +188,13 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
         # Assume .md files are templates so they get turned into HTML
         if src_path.endswith(".j2") or src_path.endswith(".md"):
             dest_path_pure = dest_path.with_suffix("")
-
-            ptr = ""
             ptr_height = len(pp)
-            if ptr_height > 1:
-                ptr = "".join(map(lambda x: "../", range(ptr_height - 1)))
 
             if src_path.endswith(".md.j2") or src_path.endswith(".md"):
                 # Process Markdown template
                 dest_path_pure = dest_path_pure.with_suffix(".html")
                 if files_as_dirs:
-                    dest_path_pure = restructure_file_as_dir(dest_path_pure)
+                    (dest_path_pure, ptr) = restructure_file_as_dir(dest_path_pure, ptr_height)
 
                 try:
                     process_md_template(templater, src_path, dest_path_pure, path_to_root=ptr)
@@ -198,7 +203,7 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
             else:
                 # Process default template
                 if files_as_dirs:
-                    dest_path_pure = restructure_file_as_dir(dest_path_pure)
+                    (dest_path_pure, ptr) = restructure_file_as_dir(dest_path_pure, ptr_height)
 
                 try:
                     process_template(templater, src_path, dest_path_pure, path_to_root=ptr)
