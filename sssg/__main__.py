@@ -8,7 +8,7 @@ def main():
     parser.add_argument("destination", help="Destination directory")
     parser.add_argument("-d", "--delete", action="store_true", help="Delete contents of destination directory before copying")
     parser.add_argument("--files-as-dirs", action="store_true", help="Turn templated files into directories (Jekyll style)")
-    parser.add_argument("-i", "--ignore", action="store_const", help="Ignore glob (gitignore style, comma seperated)")
+    parser.add_argument("-i", "--ignore", action="store", help="Ignore glob (gitignore style, comma seperated)")
 
     args = parser.parse_args()
 
