@@ -101,12 +101,12 @@ def process_md_template(tmpl, source_filename, dest_filename, **kwargs):
         f.write(output)
 
 
-def restructure_file_as_dir(current_path, current_height=0, new_filename="index.html"):
+def restructure_file_as_dir(files_as_dirs, current_path, current_height=0, new_filename="index.html"):
     '''Restructure "file.md" as "file/index.html", imitating Jekyll'''
     basedir = current_path.parent
     filename = current_path.stem
 
-    if filename != "index":
+    if files_as_dirs and filename != "index":
         # Only increment height if not an index file
         current_height = current_height + 1
 
@@ -114,8 +114,8 @@ def restructure_file_as_dir(current_path, current_height=0, new_filename="index.
     if current_height > 1:
         ptr = "".join(map(lambda x: "../", range(current_height - 1)))
 
-    if filename == "index":
-        # Don't modify an index file
+    if not files_as_dirs or filename == "index":
+        # Don't continue
         return (current_path, ptr)
 
     target_dir = basedir / filename
@@ -193,8 +193,7 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
             if src_path.endswith(".md.j2") or src_path.endswith(".md"):
                 # Process Markdown template
                 dest_path_pure = dest_path_pure.with_suffix(".html")
-                if files_as_dirs:
-                    (dest_path_pure, ptr) = restructure_file_as_dir(dest_path_pure, ptr_height)
+                (dest_path_pure, ptr) = restructure_file_as_dir(files_as_dirs, dest_path_pure, ptr_height)
 
                 try:
                     process_md_template(templater, src_path, dest_path_pure, path_to_root=ptr)
@@ -202,8 +201,7 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
                     raise BuildError(f"Failed processing markdown file: /{'/'.join(pp)}, got error: {err}") from err
             else:
                 # Process default template
-                if files_as_dirs:
-                    (dest_path_pure, ptr) = restructure_file_as_dir(dest_path_pure, ptr_height)
+                (dest_path_pure, ptr) = restructure_file_as_dir(files_as_dirs, dest_path_pure, ptr_height)
 
                 try:
                     process_template(templater, src_path, dest_path_pure, path_to_root=ptr)
