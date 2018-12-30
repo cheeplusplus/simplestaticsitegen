@@ -18,7 +18,12 @@ setuptools.setup(
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ),
-    install_requires=["jinja2", "markdown", "python-frontmatter"],
+    install_requires=[
+        "jinja2",
+        "markdown",
+        "python-frontmatter",
+        "pathmatch"
+    ],
     entry_points={
         "console_scripts": ["sssg = sssg.__main__:main"]
     }

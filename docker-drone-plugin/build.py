@@ -13,4 +13,8 @@ files_as_dirs = False
 if 'PLUGIN_FILESASDIRS' in os.environ:
     files_as_dirs = True
 
-sssg.process_directory(input_dir, target_dir, files_as_dirs=files_as_dirs)
+ignore_paths = None
+if 'PLUGIN_IGNORE' in os.environ:
+    ignore_paths = os.environ['PLUGIN_IGNORE'].split(',')
+
+sssg.process_directory(input_dir, target_dir, files_as_dirs=files_as_dirs, ignore_paths=ignore_paths)

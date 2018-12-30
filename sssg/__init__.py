@@ -1,6 +1,7 @@
 import os
 import shutil
 from pathlib import Path
+from pathmatch import gitmatch
 import inspect
 import json
 from jinja2 import Environment, FileSystemLoader, Markup
@@ -108,18 +109,34 @@ def restructure_file_as_dir(current_path, new_filename="index.html"):
     return target_dir / new_filename
 
 
-def find_files(dir):
+def find_files(dir, ignore_paths=None, relative_path=""):
     '''Find files in the source directory.'''
+
+    ignore_these = []
+    if ignore_paths:
+        if not isinstance(ignore_paths, list):
+            # Coerce to list
+            ignore_paths = list(ignore_paths)
+
+        # Construct matchers
+        ignore_these = [(lambda fn: gitmatch.match(p, fn)) for p in ignore_paths]
 
     with os.scandir(dir) as it:
         for entry in it:
+            relative_file = relative_path + "/" + entry.name
+
             if entry.is_file():
+                # Handle ignore paths
+                if any(i(relative_file) for i in ignore_these):
+                    # Skip this entry
+                    continue
+
                 yield os.path.join(entry.path)
             if entry.is_dir() and entry.name != "." and entry.name != ".." and entry.name != ".templates":
-                yield from find_files(entry.path)
+                yield from find_files(entry.path, ignore_paths=ignore_paths, relative_path=relative_file)
 
 
-def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=False):
+def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=False, ignore_paths=None):
     '''Process a source directory and save results to destination.'''
 
     # Validate source directory
@@ -129,7 +146,7 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
         raise FileNotFoundError("Source directory does not exist.")
 
     # Find all files in source
-    contents = find_files(source_dir)
+    contents = find_files(source_dir, ignore_paths)
 
     # Handle destination directory
     dest_dir = os.path.abspath(dest_dir)
