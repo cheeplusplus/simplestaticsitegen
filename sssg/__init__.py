@@ -9,6 +9,11 @@ from markdown import Markdown
 import frontmatter
 
 
+class BuildError(Exception):
+    def __init__(self, message):
+        Exception.__init__(self, message)
+
+
 class Templater(object):
     '''Build templates.'''
 
@@ -47,6 +52,8 @@ class Templater(object):
                 extra_data = json.load(f)
 
         template = self.jinja.from_string(con)
+        template.filename = source_filename
+
         return (template.render(**kwargs, **meta, **extra_data), meta)
 
     def generate_html(self, content, source_filename, **kwargs):
@@ -183,12 +190,20 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
                 dest_path_pure = dest_path_pure.with_suffix(".html")
                 if files_as_dirs:
                     dest_path_pure = restructure_file_as_dir(dest_path_pure)
-                process_md_template(templater, src_path, dest_path_pure, path_to_root=ptr)
+
+                try:
+                    process_md_template(templater, src_path, dest_path_pure, path_to_root=ptr)
+                except Exception as err:
+                    raise BuildError(f"Failed processing markdown file: /{'/'.join(pp)}, got error: {err}") from err
             else:
                 # Process default template
                 if files_as_dirs:
                     dest_path_pure = restructure_file_as_dir(dest_path_pure)
-                process_template(templater, src_path, dest_path_pure, path_to_root=ptr)
+
+                try:
+                    process_template(templater, src_path, dest_path_pure, path_to_root=ptr)
+                except Exception as err:
+                    raise BuildError(f"Failed processing template file: /{'/'.join(pp)}, got error: {err}") from err
         else:
             # Copy everything else
             shutil.copy2(src_path, dest_path)
