@@ -43,7 +43,7 @@ class Templater(object):
         extra_data = {}
         if "load_json" in meta:
             p = os.path.join(os.path.dirname(source_filename), meta["load_json"])
-            with open(p, "r") as f:
+            with open(p, "r", encoding="utf-8") as f:
                 extra_data = json.load(f)
 
         template = self.jinja.from_string(con)
@@ -73,24 +73,24 @@ class Templater(object):
 def process_template(tmpl, source_filename, dest_filename, **kwargs):
     '''Read a source file and save the template output.'''
 
-    with open(source_filename, "r") as f:
+    with open(source_filename, "r", encoding="utf-8") as f:
         content = f.read()
 
     output = tmpl.generate_html(content, source_filename, **kwargs)
 
-    with open(dest_filename, "w") as f:
+    with open(dest_filename, "w", encoding="utf-8") as f:
         f.write(output)
 
 
 def process_md_template(tmpl, source_filename, dest_filename, **kwargs):
     '''Read a Markdown file and save the template output.'''
 
-    with open(source_filename, "r") as f:
+    with open(source_filename, "r", encoding="utf-8") as f:
         content = f.read()
 
     output = tmpl.generate_markdown(content, source_filename, **kwargs)
 
-    with open(dest_filename, "w") as f:
+    with open(dest_filename, "w", encoding="utf-8") as f:
         f.write(output)
 
 
