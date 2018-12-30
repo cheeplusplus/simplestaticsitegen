@@ -19,7 +19,14 @@ class Templater(object):
 
     def __init__(self, source_dir):
         self.md = Markdown(extensions=[
-            'markdown.extensions.nl2br'
+            'markdown.extensions.nl2br',
+            'markdown.extensions.tables',
+            'pymdownx.magiclink',
+            'pymdownx.betterem',
+            'pymdownx.tilde',
+            'pymdownx.emoji',
+            'pymdownx.tasklist',
+            'pymdownx.superfences'
         ])
 
         template_paths = []

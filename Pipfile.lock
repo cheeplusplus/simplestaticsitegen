@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "0b50cfb10cc67bfd5ad8a4a52e7685f66c41c63b77c96dbd4446216620716db6"
+            "sha256": "e85f3d128e080aa7b377fde6dbf88aedb143b9a89543d73ef67e1cf363107720"
         },
         "pipfile-spec": 6,
         "requires": {},
@@ -61,7 +61,6 @@
                 "sha256:f82e347a72f955b7017a39708a3667f106e6ad4d10b25f237396a7115d8ed5fd",
                 "sha256:fb7c206e01ad85ce57feeaaa0bf784b97fa3cad0d4a5737bc5295785f5c613a1"
             ],
-            "markers": "python_version != '3.0.*' and python_version >= '2.7' and python_version != '3.2.*' and python_version != '3.3.*' and python_version != '3.1.*'",
             "version": "==1.1.0"
         },
         "pathmatch": {
@@ -70,6 +69,14 @@
             ],
             "index": "pypi",
             "version": "==0.2.1"
+        },
+        "pymdown-extensions": {
+            "hashes": [
+                "sha256:25b0a7967fa697b5035e23340a48594e3e93acb10b06d74574218ace3347d1df",
+                "sha256:6cf0cf36b5a03b291ace22dc2f320f4789ce56fbdb6635a3be5fadbf5d7694dd"
+            ],
+            "index": "pypi",
+            "version": "==6.0"
         },
         "python-frontmatter": {
             "hashes": [
@@ -100,7 +107,6 @@
                 "sha256:3350809f0555b11f552448330d0b52d5f24c91a322ea4a15ef22629740f3761c",
                 "sha256:d16a0141ec1a18405cd4ce8b4613101da75da0e9a7aec5bdd4fa804d0e0eba73"
             ],
-            "markers": "python_version != '3.0.*' and python_version != '3.1.*' and python_version >= '2.6'",
             "version": "==1.12.0"
         },
         "typing": {
@@ -140,7 +146,6 @@
                 "sha256:9a7662ec724d0120012f6e29d6248ae3727d821bba522a0e6b356eff19126a49",
                 "sha256:f661252913bc1dbe7fcfcbf0af0db3f42ab65aabd1a6ca68fe5d466bace94dae"
             ],
-            "markers": "python_version >= '2.7' and python_version != '3.0.*' and python_version != '3.3.*' and python_version != '3.1.*' and python_version != '3.2.*'",
             "version": "==2.0.0"
         }
     }

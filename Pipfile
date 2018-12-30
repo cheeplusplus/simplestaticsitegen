@@ -8,6 +8,7 @@ name = "pypi"
 markdown = "*"
 python-frontmatter = "*"
 pathmatch = "*"
+pymdown-extensions = "*"
 
 [dev-packages]
 "flake8" = "*"

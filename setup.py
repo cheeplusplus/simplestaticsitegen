@@ -22,6 +22,7 @@ setuptools.setup(
     install_requires=[
         "jinja2",
         "markdown",
+        "pymdown-extensions",
         "python-frontmatter",
         "pathmatch"
     ],
