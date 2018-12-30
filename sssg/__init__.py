@@ -150,7 +150,7 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
 
     # Handle destination directory
     dest_dir = os.path.abspath(dest_dir)
-    if wipe_first:
+    if wipe_first and os.path.exists(dest_dir):
         shutil.rmtree(dest_dir)
 
     # Prepare templater
