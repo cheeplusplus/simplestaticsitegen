@@ -6,12 +6,12 @@ with open("README.md", "r") as fh:
 setuptools.setup(
     name="sssg",
     version="0.0.8",
-    author="AndrewNeo",
-    author_email="andrew@andrewneo.com",
+    author="Kauko",
+    author_email="kauko@biosynth.link",
     description="Simple static site generator with Jinja",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/AndrewNeo/simplestaticsitegen",
+    url="https://github.com/cheeplusplus/simplestaticsitegen",
     packages=setuptools.find_packages(),
     include_package_data=True,
     classifiers=(

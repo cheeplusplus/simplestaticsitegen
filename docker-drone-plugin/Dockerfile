@@ -11,7 +11,7 @@ RUN apk --update add git openssh && \
     rm /var/cache/apk/*
 
 # Install SSSG
-RUN pip install git+https://github.com/AndrewNeo/simplestaticsitegen.git#egg=sssg
+RUN pip install git+https://github.com/cheeplusplus/simplestaticsitegen.git#egg=sssg
 
 # Handle buildscript
 COPY build.py /usr/local
