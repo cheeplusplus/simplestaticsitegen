@@ -47,6 +47,10 @@ class Templater(object):
         post = frontmatter.loads(content)
         return (post.content, post.metadata)
 
+    def render_redirect(self, meta):
+        template = self.jinja.get_template("redirect.html")
+        return template.render(**meta)
+
     def generate_string(self, content, source_filename, **kwargs):
         '''Generate output given a template string and content.'''
         (con, meta) = self.read_metadata(content)
@@ -66,12 +70,17 @@ class Templater(object):
     def generate_html(self, content, source_filename, **kwargs):
         '''Generate output given template HTML content.'''
         (con, meta) = self.generate_string(content, source_filename, **kwargs)
+        if "redirect_url" in meta:
+            return self.render_redirect(meta)
+
         return con
 
     def generate_markdown(self, content, source_filename, **kwargs):
         '''Generate output given template Markdown content.'''
         # Convert Markdown to HTML
         (con, meta) = self.generate_string(content, source_filename, **kwargs)
+        if "redirect_url" in meta:
+            return self.render_redirect(meta)
 
         # Metadata processing
         # Handle template_name

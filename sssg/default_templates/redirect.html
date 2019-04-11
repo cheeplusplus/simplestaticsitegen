@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="refresh" content="0; URL='{{ redirect_url }}'" >
+        <title>{{ title | d("Redirecting") }}</title>
+        <script>
+            window.location.href = "{{ redirect_url }}";
+        </script>
+    </head>
+    <body>
+        {{ redirect_message | d("Redirecting...") }}<br />
+        If the page isn't loading, click here: <a href="{{ redirect_url }}">{{ redirect_url }}</a>.
+    </body>
+</html>
