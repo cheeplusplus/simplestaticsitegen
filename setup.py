@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="sssg",
-    version="0.0.8",
+    version="0.0.9",
     author="Kauko",
     author_email="kauko@biosynth.link",
     description="Simple static site generator with Jinja",
