@@ -15,4 +15,4 @@ inputs:
     description: "Ignore paths (comma seperated)"
 runs:
   using: "docker"
-  image: "Dockerfile"
+  image: "docker://ghcr.io/cheeplusplus/simplestaticsitegen/simplestaticsitegen:gh-actions"
