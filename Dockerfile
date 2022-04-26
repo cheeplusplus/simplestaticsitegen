@@ -1,11 +1,11 @@
-FROM python:3.7-alpine
+FROM python:3.10-alpine
 
 LABEL maintainer="Kauko <kauko@biosynth.link>" \
   org.label-schema.name="Simple Static Site Generator" \
   org.label-schema.vendor="Kauko" \
   org.label-schema.schema-version="1.0"
 
-ENV VERSION 0.0.9
+ENV VERSION 0.1.0
 
 # Add git for pipenv dep on sssg
 RUN apk --update add git openssh && \
