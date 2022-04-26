@@ -14,7 +14,7 @@
             "name": "Python: Test Script",
             "type": "python",
             "request": "launch",
-            "pythonPath": "${config:python.pythonPath}",
+            "python": "${command:python.interpreterPath}",
             "program": "${workspaceFolder}/test.py"
         }
     ]
