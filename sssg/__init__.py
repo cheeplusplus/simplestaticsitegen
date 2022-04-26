@@ -4,8 +4,9 @@ from pathlib import Path
 from pathmatch import gitmatch
 import inspect
 import json
-from jinja2 import Environment, FileSystemLoader, Markup
+from jinja2 import Environment, FileSystemLoader
 from markdown import Markdown
+from markupsafe import Markup
 import frontmatter
 import urllib.request
 
