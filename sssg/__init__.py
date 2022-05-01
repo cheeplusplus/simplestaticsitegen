@@ -30,6 +30,9 @@ class Templater(object):
             'pymdownx.tasklist',
             'pymdownx.superfences'
         ])
+        
+        # Don't use the built-in link as we want to be able to rewrite them
+        self.md.inlinePatterns.deregister("link")
 
         template_paths = []
 
@@ -195,7 +198,7 @@ def find_files(dir, ignore_paths=None, relative_path=""):
                 yield from find_files(entry.path, ignore_paths=ignore_paths, relative_path=relative_file)
 
 
-def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=False, ignore_paths=None):
+def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=False, ignore_paths=None, progress=False):
     '''Process a source directory and save results to destination.'''
 
     # Validate source directory
@@ -215,6 +218,8 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
     # Prepare templater
     templater = Templater(source_dir)
 
+    file_transform = {}
+
     # Copy to output directory
     for src_path in contents:
         # Get the target path
@@ -226,6 +231,9 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
         dest_dir_path = os.path.dirname(dest_path)
         if not os.path.exists(dest_dir_path):
             os.makedirs(dest_dir_path)
+        
+        if progress:
+            print(f" > {src_path}")
 
         if src_path.endswith(".j2") or src_path.endswith(".md"):
             # Run anything ending in .j2 as a template
