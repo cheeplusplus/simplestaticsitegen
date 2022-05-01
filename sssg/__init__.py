@@ -175,7 +175,7 @@ def find_files(dir, ignore_paths=None, relative_path=""):
     '''Find files in the source directory.'''
 
     ignore_these = []
-    if ignore_paths:
+    if ignore_paths and len(ignore_paths) > 0:
         if not isinstance(ignore_paths, list):
             # Coerce to list
             ignore_paths = list(ignore_paths)
@@ -198,7 +198,7 @@ def find_files(dir, ignore_paths=None, relative_path=""):
                 yield from find_files(entry.path, ignore_paths=ignore_paths, relative_path=relative_file)
 
 
-def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=False, ignore_paths=None, progress=False):
+def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=False, ignore_paths=None, debug=False):
     '''Process a source directory and save results to destination.'''
 
     # Validate source directory
@@ -232,7 +232,7 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
         if not os.path.exists(dest_dir_path):
             os.makedirs(dest_dir_path)
         
-        if progress:
+        if debug:
             print(f" > {src_path}")
 
         if src_path.endswith(".j2") or src_path.endswith(".md"):
