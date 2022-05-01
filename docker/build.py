@@ -19,6 +19,7 @@ if 'INPUT_IGNORE' in os.environ:
 
 if 'SSSG_DEBUG' in os.environ and os.environ['SSSG_DEBUG'] == 'true':
     print("Starting SSSG action.")
+    print("Current directory:", os.getcwd())
     print("Input:", input_dir)
     print("Target:", target_dir)
     print("Files as dirs?", files_as_dirs)
