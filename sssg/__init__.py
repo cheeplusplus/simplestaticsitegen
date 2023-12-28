@@ -9,6 +9,7 @@ from markdown import Markdown
 from markupsafe import Markup
 import frontmatter
 import urllib.request
+from typing import Generator, Optional
 
 
 class BuildError(Exception):
@@ -19,7 +20,7 @@ class BuildError(Exception):
 class Templater(object):
     '''Build templates.'''
 
-    def __init__(self, source_dir):
+    def __init__(self, source_dir: str):
         self.md = Markdown(extensions=[
             'markdown.extensions.nl2br',
             'markdown.extensions.tables',
@@ -47,16 +48,16 @@ class Templater(object):
         self.jinja = Environment(loader=FileSystemLoader(template_paths))
         self.jinja.filters["markdown"] = lambda text: Markup(self.md.convert(text))
 
-    def read_metadata(self, content):
+    def read_metadata(self, content: str) -> tuple[str, dict[str, str]]:
         '''Attempt to read metadata from a file.'''
         post = frontmatter.loads(content)
         return (post.content, post.metadata)
 
-    def render_redirect(self, meta):
+    def render_redirect(self, meta: dict[str, str]) -> str:
         template = self.jinja.get_template("redirect.html")
         return template.render(**meta)
 
-    def generate_string(self, content, source_filename, **kwargs):
+    def generate_string(self, content: str, source_filename: str, **kwargs) -> tuple[str, dict[str, str]]:
         '''Generate output given a template string and content.'''
         (con, meta) = self.read_metadata(content)
 
@@ -72,7 +73,7 @@ class Templater(object):
 
         return (template.render(**kwargs, **meta, **extra_data), meta)
 
-    def generate_html(self, content, source_filename, **kwargs):
+    def generate_html(self, content: str, source_filename: str, **kwargs) -> str:
         '''Generate output given template HTML content.'''
         (con, meta) = self.generate_string(content, source_filename, **kwargs)
         if "redirect_url" in meta:
@@ -80,7 +81,7 @@ class Templater(object):
 
         return con
 
-    def generate_markdown(self, content, source_filename, **kwargs):
+    def generate_markdown(self, content: str, source_filename: str, **kwargs):
         '''Generate output given template Markdown content.'''
         # Convert Markdown to HTML
         (con, meta) = self.generate_string(content, source_filename, **kwargs)
@@ -98,7 +99,7 @@ class Templater(object):
         return template.render(md_content=con, **kwargs, **meta)
 
 
-def process_template(tmpl, source_filename, dest_filename, **kwargs):
+def process_template(tmpl: Templater, source_filename: str, dest_filename: str, **kwargs) -> None:
     '''Read a source file and save the template output.'''
 
     with open(source_filename, "r", encoding="utf-8") as f:
@@ -110,7 +111,7 @@ def process_template(tmpl, source_filename, dest_filename, **kwargs):
         f.write(output)
 
 
-def process_md_template(tmpl, source_filename, dest_filename, **kwargs):
+def process_md_template(tmpl: Templater, source_filename: str, dest_filename: str, **kwargs) -> None:
     '''Read a Markdown file and save the template output.'''
 
     with open(source_filename, "r", encoding="utf-8") as f:
@@ -122,7 +123,7 @@ def process_md_template(tmpl, source_filename, dest_filename, **kwargs):
         f.write(output)
 
 
-def process_copy_operation(source_filename, dest_filename):
+def process_copy_operation(source_filename: str, dest_filename: str) -> None:
     '''Parse a SSSG-COPY file and save the target to the destination.'''
 
     with open(source_filename, "r", encoding="utf-8") as f:
@@ -147,8 +148,9 @@ def process_copy_operation(source_filename, dest_filename):
         urllib.request.urlretrieve(target_url, dest_filename)
 
 
-def restructure_file_as_dir(files_as_dirs, current_path, current_height=0, new_filename="index.html"):
+def restructure_file_as_dir(files_as_dirs, current_path: Path, current_height=0, new_filename="index.html") -> tuple[Path, str]:
     '''Restructure "file.md" as "file/index.html", imitating Jekyll'''
+
     basedir = current_path.parent
     filename = current_path.stem
 
@@ -171,7 +173,7 @@ def restructure_file_as_dir(files_as_dirs, current_path, current_height=0, new_f
     return (target_dir / new_filename, ptr)
 
 
-def find_files(dir, ignore_paths=None, relative_path=""):
+def find_files(dir: str, ignore_paths: Optional[list[str]] = None, relative_path: str = "") -> Generator[str, None, None]:
     '''Find files in the source directory.'''
 
     ignore_these = []
@@ -198,7 +200,7 @@ def find_files(dir, ignore_paths=None, relative_path=""):
                 yield from find_files(entry.path, ignore_paths=ignore_paths, relative_path=relative_file)
 
 
-def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=False, ignore_paths=None, debug=False):
+def process_directory(source_dir: str, dest_dir: str, files_as_dirs: bool = False, wipe_first: bool = False, ignore_paths: Optional[list[str]] = None, debug: bool = False) -> None:
     '''Process a source directory and save results to destination.'''
 
     # Validate source directory
@@ -217,8 +219,6 @@ def process_directory(source_dir, dest_dir, files_as_dirs=False, wipe_first=Fals
 
     # Prepare templater
     templater = Templater(source_dir)
-
-    file_transform = {}
 
     # Copy to output directory
     for src_path in contents:
