@@ -13,11 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: Publish to Registry
-        if: success()
-        uses: elgohr/Publish-Docker-Github-Action@v4
+        uses: elgohr/Publish-Docker-Github-Action@v5
         with:
-          name: ${{ github.repository }}/simplestaticsitegen
-          registry: https://ghcr.io
-          username: ${{ github.actor }}
+          name: ghcr.io/${{ github.repository }}/simplestaticsitegen
+          registry: ghcr.io
+          username: ${{ github.repository }}
           password: ${{ secrets.GITHUB_TOKEN }}
-          no_push: ${{ github.event_name == 'pull_request' || github.actor == 'dependabot[bot]' }}
