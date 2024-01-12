@@ -1,11 +1,13 @@
 import os
 import shutil
+import sys
 from pathlib import Path
 from pathmatch import gitmatch
+import importlib.util
 import inspect
 import json
 from jinja2 import Environment, FileSystemLoader
-from markdown import Markdown
+from markdown import Markdown, Extension
 from markupsafe import Markup
 import frontmatter
 import urllib.request
@@ -21,8 +23,9 @@ class BuildError(Exception):
 class Templater(object):
     '''Build templates.'''
 
-    def __init__(self, source_dir: str):
-        self.md = Markdown(extensions=[
+    def __init__(self, source_dir: str, extra_jinja_filters: dict[str, any] = None, extra_md_extensions: list[Extension] = None):
+        # Register regular and extra Markdown extensions
+        md_extensions = [
             'markdown.extensions.nl2br',
             'markdown.extensions.tables',
             'pymdownx.magiclink',
@@ -31,7 +34,12 @@ class Templater(object):
             'pymdownx.emoji',
             'pymdownx.tasklist',
             'pymdownx.superfences'
-        ])
+        ]
+        if extra_md_extensions:
+            for ext in extra_md_extensions:
+                md_extensions.append(ext)
+
+        self.md = Markdown(extensions=md_extensions)
         
         # Don't use the built-in link as we want to be able to rewrite them
         self.md.inlinePatterns.deregister("link")
@@ -47,8 +55,15 @@ class Templater(object):
         template_paths.append(default_template_dir)
 
         self.jinja = Environment(loader=FileSystemLoader(template_paths))
+        
+        # Register built-in custom Jinja filters
         self.jinja.filters["markdown"] = lambda text: Markup(self.md.convert(text))
         add_custom_filters(self.jinja.filters)
+        
+        # Register extra Jinja filters
+        if extra_jinja_filters:
+            for name, func in extra_jinja_filters.items():
+                self.jinja.filters[name] = func
 
     def read_metadata(self, content: str) -> tuple[str, dict[str, str]]:
         '''Attempt to read metadata from a file.'''
@@ -202,8 +217,34 @@ def find_files(dir: str, ignore_paths: Optional[list[str]] = None, relative_path
                 yield from find_files(entry.path, ignore_paths=ignore_paths, relative_path=relative_file)
 
 
-def process_directory(source_dir: str, dest_dir: str, files_as_dirs: bool = False, wipe_first: bool = False, ignore_paths: Optional[list[str]] = None, debug: bool = False) -> None:
+def process_directory(source_dir: str, dest_dir: str, files_as_dirs: bool = False, wipe_first: bool = False, ignore_paths: Optional[list[str]] = None, custom_filter_module_path: str = None, custom_md_extension_module_path: str = None, debug: bool = False) -> None:
     '''Process a source directory and save results to destination.'''
+
+    # Validate and load custom filter module
+    custom_jinja_filters = None
+    if custom_filter_module_path:
+        custom_filter_module_path_abs = os.path.abspath(custom_filter_module_path)
+        import_spec = importlib.util.spec_from_file_location("jinja_loader", custom_filter_module_path_abs)
+        import_mod = importlib.util.module_from_spec(import_spec)
+        sys.modules["jinja_loader"] = import_mod
+        import_spec.loader.exec_module(import_mod)
+        if hasattr(import_mod, "SSSG_JINJA_FILTERS"):
+            custom_jinja_filters = import_mod.SSSG_JINJA_FILTERS
+        else:
+            print("Failed to import custom Jinja filters module")
+
+    # Validate and load custom Markdown extension module
+    custom_md_extensions = None
+    if custom_md_extension_module_path:
+        custom_md_extension_module_path_abs = os.path.abspath(custom_md_extension_module_path)
+        import_spec = importlib.util.spec_from_file_location("md_ext_loader", custom_md_extension_module_path_abs)
+        import_mod = importlib.util.module_from_spec(import_spec)
+        sys.modules["md_ext_loader"] = import_mod
+        import_spec.loader.exec_module(import_mod)
+        if hasattr(import_mod, "SSSG_MD_EXTENSIONS"):
+            custom_md_extensions = import_mod.SSSG_MD_EXTENSIONS
+        else:
+            print("Failed to import custom Markdown extensions module")
 
     # Validate source directory
     source_dir = os.path.abspath(source_dir)
@@ -220,7 +261,7 @@ def process_directory(source_dir: str, dest_dir: str, files_as_dirs: bool = Fals
         shutil.rmtree(dest_dir)
 
     # Prepare templater
-    templater = Templater(source_dir)
+    templater = Templater(source_dir, extra_jinja_filters=custom_jinja_filters, extra_md_extensions=custom_md_extensions)
 
     # Copy to output directory
     for src_path in contents:

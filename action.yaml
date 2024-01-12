@@ -13,6 +13,10 @@ inputs:
     description: "Convert bare files to directories"
   ignore:
     description: "Ignore paths (comma seperated)"
+  customJinjaFilterPath:
+    description: "Path to a custom Jinja filter module"
+  customMarkdownExtensionPath:
+    description: "Path to a custom Markdown extension module"
 runs:
   using: "docker"
   image: "docker://ghcr.io/cheeplusplus/simplestaticsitegen/simplestaticsitegen:latest"
