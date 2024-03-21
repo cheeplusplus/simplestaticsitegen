@@ -10,7 +10,7 @@ from markupsafe import Markup
 import frontmatter
 import urllib.request
 from typing import Generator, Optional
-from .filters import thumbor_signed
+from .filters import add_custom_filters
 
 
 class BuildError(Exception):
@@ -48,7 +48,7 @@ class Templater(object):
 
         self.jinja = Environment(loader=FileSystemLoader(template_paths))
         self.jinja.filters["markdown"] = lambda text: Markup(self.md.convert(text))
-        self.jinja.filters["thumbor_signed"] = lambda text: thumbor_signed(text)
+        add_custom_filters(self.jinja.filters)
 
     def read_metadata(self, content: str) -> tuple[str, dict[str, str]]:
         '''Attempt to read metadata from a file.'''
