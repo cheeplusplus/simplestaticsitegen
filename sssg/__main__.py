@@ -10,7 +10,6 @@ def main():
     parser.add_argument("-d", "--delete", action="store_true", help="Delete contents of destination directory before copying")
     parser.add_argument("--files-as-dirs", action="store_true", help="Turn templated files into directories (Jekyll style)")
     parser.add_argument("-i", "--ignore", action="store", help="Ignore glob (gitignore style, comma seperated)")
-    parser.add_argument('--load-module', action="store", help="Path to a custom Jinja filter module")
     parser.add_argument('--customize-module', action="store", help="Path to a customizer module")
 
     args = parser.parse_args()
