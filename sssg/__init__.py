@@ -217,34 +217,28 @@ def find_files(dir: str, ignore_paths: Optional[list[str]] = None, relative_path
                 yield from find_files(entry.path, ignore_paths=ignore_paths, relative_path=relative_file)
 
 
-def process_directory(source_dir: str, dest_dir: str, files_as_dirs: bool = False, wipe_first: bool = False, ignore_paths: Optional[list[str]] = None, custom_filter_module_path: str = None, custom_md_extension_module_path: str = None, debug: bool = False) -> None:
+def process_directory(source_dir: str, dest_dir: str, files_as_dirs: bool = False, wipe_first: bool = False, ignore_paths: Optional[list[str]] = None, customize_module_path: str = None, debug: bool = False) -> None:
     '''Process a source directory and save results to destination.'''
 
-    # Validate and load custom filter module
+    # Validate and load the customization module
     custom_jinja_filters = None
-    if custom_filter_module_path:
-        custom_filter_module_path_abs = os.path.abspath(custom_filter_module_path)
-        import_spec = importlib.util.spec_from_file_location("jinja_loader", custom_filter_module_path_abs)
+    custom_md_extensions = None
+    if customize_module_path:
+        custom_filter_module_path_abs = os.path.abspath(customize_module_path)
+        import_spec = importlib.util.spec_from_file_location("sssg_customize", custom_filter_module_path_abs)
         import_mod = importlib.util.module_from_spec(import_spec)
-        sys.modules["jinja_loader"] = import_mod
+        sys.modules["sssg_customize"] = import_mod
         import_spec.loader.exec_module(import_mod)
-        if hasattr(import_mod, "SSSG_JINJA_FILTERS"):
+
+        if hasattr(import_mod, "SSSG_JINJA_FILTERS") and isinstance(import_mod.SSSG_JINJA_FILTERS, dict):
             custom_jinja_filters = import_mod.SSSG_JINJA_FILTERS
-        else:
+        elif debug:
             print("Failed to import custom Jinja filters module")
 
-    # Validate and load custom Markdown extension module
-    custom_md_extensions = None
-    if custom_md_extension_module_path:
-        custom_md_extension_module_path_abs = os.path.abspath(custom_md_extension_module_path)
-        import_spec = importlib.util.spec_from_file_location("md_ext_loader", custom_md_extension_module_path_abs)
-        import_mod = importlib.util.module_from_spec(import_spec)
-        sys.modules["md_ext_loader"] = import_mod
-        import_spec.loader.exec_module(import_mod)
-        if hasattr(import_mod, "SSSG_MD_EXTENSIONS"):
+        if hasattr(import_mod, "SSSG_MD_EXTENSIONS") and isinstance(import_mod.SSSG_MD_EXTENSIONS, list):
             custom_md_extensions = import_mod.SSSG_MD_EXTENSIONS
-        else:
-            print("Failed to import custom Markdown extensions module")
+        elif debug:
+            print("Failed to import custom Jinja filters module")
 
     # Validate source directory
     source_dir = os.path.abspath(source_dir)

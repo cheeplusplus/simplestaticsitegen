@@ -17,9 +17,9 @@ ignore_paths = None
 if 'INPUT_IGNORE' in os.environ and len(os.environ['INPUT_IGNORE']) > 0:
     ignore_paths = os.environ['INPUT_IGNORE'].split(',')
 
-custom_jinjafilter_path = None
-if 'INPUT_CUSTOMJINJAFILTERPATH' in os.environ and len(os.environ['INPUT_CUSTOMJINJAFILTERPATH']):
-    custom_jinjafilter_path = os.environ['INPUT_CUSTOMJINJAFILTERPATH']
+customize_module_path = None
+if 'INPUT_CUSTOMIZERPATH' in os.environ and len(os.environ['INPUT_CUSTOMIZERPATH']):
+    customize_module_path = os.environ['INPUT_CUSTOMIZERPATH']
 
 custom_mdext_path = None
 if 'INPUT_CUSTOMMARKDOWNEXTENSIONPATH' in os.environ and len(os.environ['INPUT_CUSTOMMARKDOWNEXTENSIONPATH']):
@@ -33,9 +33,8 @@ if 'SSSG_DEBUG' in os.environ and os.environ['SSSG_DEBUG'] == 'true':
     print("Target:", target_dir)
     print("Files as dirs?", files_as_dirs)
     print("Ignore paths:", ignore_paths)
-    print("Custom Jinja filter path:", custom_jinjafilter_path)
-    print("Custom Markdown extension path:", custom_mdext_path)
+    print("Customizer module path:", customize_module_path)
 
 print("Processing data...")
-sssg.process_directory(input_dir, target_dir, files_as_dirs=files_as_dirs, ignore_paths=ignore_paths, custom_jinjafilter_path=custom_jinjafilter_path, custom_md_extension_module_path=custom_mdext_path, debug=debug)
+sssg.process_directory(input_dir, target_dir, files_as_dirs=files_as_dirs, ignore_paths=ignore_paths, customize_module_path=customize_module_path, debug=debug)
 print("Done.")
