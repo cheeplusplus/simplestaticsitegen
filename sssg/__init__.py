@@ -11,7 +11,7 @@ from markdown import Markdown, Extension
 from markupsafe import Markup
 import frontmatter
 import urllib.request
-from typing import Generator, Optional
+from typing import Generator, Optional, Callable
 from .filters import add_custom_filters
 
 
@@ -23,7 +23,7 @@ class BuildError(Exception):
 class Templater(object):
     '''Build templates.'''
 
-    def __init__(self, source_dir: str, extra_jinja_filters: dict[str, any] = None, extra_md_extensions: list[Extension] = None):
+    def __init__(self, source_dir: str, extra_jinja_filters: dict[str, Callable[[str], str]] = None, extra_md_extensions: list[Extension] = None, postprocessors: list[Callable[[str], str]] = None):
         # Register regular and extra Markdown extensions
         md_extensions = [
             'markdown.extensions.nl2br',
@@ -64,6 +64,9 @@ class Templater(object):
         if extra_jinja_filters:
             for name, func in extra_jinja_filters.items():
                 self.jinja.filters[name] = func
+        
+        # Register postprocessors
+        self.postprocessors = postprocessors or []
 
     def read_metadata(self, content: str) -> tuple[str, dict[str, str]]:
         '''Attempt to read metadata from a file.'''
@@ -96,7 +99,8 @@ class Templater(object):
         if "redirect_url" in meta:
             return self.render_redirect(meta)
 
-        return con
+        rendered = self.postprocess(con)
+        return rendered
 
     def generate_markdown(self, content: str, source_filename: str, **kwargs):
         '''Generate output given template Markdown content.'''
@@ -113,7 +117,16 @@ class Templater(object):
 
         # Output template as final HTML
         template = self.jinja.get_template(template_name)
-        return template.render(md_content=con, **kwargs, **meta)
+        rendered = template.render(md_content=con, **kwargs, **meta)
+        rendered = self.postprocess(rendered)
+        return rendered
+
+    def postprocess(self, content: str) -> str:
+        '''Post-process rendered HTML.'''
+        new_content = content
+        for proc in self.postprocessors:
+            new_content = proc(new_content)
+        return new_content
 
 
 def process_template(tmpl: Templater, source_filename: str, dest_filename: str, **kwargs) -> None:
@@ -221,8 +234,10 @@ def process_directory(source_dir: str, dest_dir: str, files_as_dirs: bool = Fals
     '''Process a source directory and save results to destination.'''
 
     # Validate and load the customization module
-    custom_jinja_filters = None
-    custom_md_extensions = None
+    custom_jinja_filters: dict[str, function] = None
+    custom_md_extensions: list[Extension] = None
+    custom_postprocessors: list[function] = None
+
     if customize_module_path:
         custom_filter_module_path_abs = os.path.abspath(customize_module_path)
         import_spec = importlib.util.spec_from_file_location("sssg_customize", custom_filter_module_path_abs)
@@ -239,6 +254,11 @@ def process_directory(source_dir: str, dest_dir: str, files_as_dirs: bool = Fals
             custom_md_extensions = import_mod.SSSG_MD_EXTENSIONS
         elif debug:
             print("Failed to import custom Jinja filters module")
+        
+        if hasattr(import_mod, "SSSG_POSTPROCESSORS") and isinstance(import_mod.SSSG_POSTPROCESSORS, list):
+            custom_postprocessors = import_mod.SSSG_POSTPROCESSORS
+        elif debug:
+            print("Failed to import custom postprocessors module")
 
     # Validate source directory
     source_dir = os.path.abspath(source_dir)
@@ -255,7 +275,7 @@ def process_directory(source_dir: str, dest_dir: str, files_as_dirs: bool = Fals
         shutil.rmtree(dest_dir)
 
     # Prepare templater
-    templater = Templater(source_dir, extra_jinja_filters=custom_jinja_filters, extra_md_extensions=custom_md_extensions)
+    templater = Templater(source_dir, extra_jinja_filters=custom_jinja_filters, extra_md_extensions=custom_md_extensions, postprocessors=custom_postprocessors)
 
     # Copy to output directory
     for src_path in contents:
