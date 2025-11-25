@@ -32,9 +32,6 @@ class Templater(object):
             'pymdownx.tasklist',
             'pymdownx.superfences'
         ])
-        
-        # Don't use the built-in link as we want to be able to rewrite them
-        self.md.inlinePatterns.deregister("link")
 
         template_paths = []
 
