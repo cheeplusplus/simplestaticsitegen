@@ -45,11 +45,16 @@ class LinkRewriterTreeprocessor(Treeprocessor):
     def run(self, root: eTree.Element) -> None:
         for child in root.iter("a"):
             href = child.get("href")
-            converted_path = self.get_converted_path(href)
+            converted_path = self.get_converted_path(href, self.files_as_dirs)
             if converted_path != href:
                 child.set("href", converted_path)
+        for child in root.iter("img"):
+            href = child.get("src")
+            converted_path = self.get_converted_path(href)
+            if converted_path != href:
+                child.set("src", converted_path)
 
-    def get_converted_path(self, href: str) -> str:
+    def get_converted_path(self, href: str, files_as_dirs: bool = False) -> str:
         if (
             not self.extension.src_filename
             or not self.extension.dst_filename
@@ -97,7 +102,21 @@ class LinkRewriterTreeprocessor(Treeprocessor):
 
         dst_rel = href_abs.relative_to(self.entrypoint)
         dst_basename = str(dst_rel.name).split(".")[0]
-        if self.files_as_dirs:
-            return f"{joiner}{dst_basename}/index.html"
+        dst_suffixes = dst_rel.suffixes
+
+        if ".j2" in dst_suffixes:
+            dst_suffixes.remove(".j2")
+        if ".sssg-copy" in dst_suffixes:
+            dst_suffixes.remove(".sssg-copy")
+
+        will_be_html = ".html" in dst_suffixes or ".md" in dst_suffixes
+        final_path = f"{joiner}{dst_basename}"
+        if will_be_html:
+            if files_as_dirs:
+                final_path += "/index.html"
+            else:
+                final_path += ".html"
         else:
-            return f"{joiner}{dst_basename}.html"
+            final_path += ".".join(dst_suffixes)
+
+        return final_path
