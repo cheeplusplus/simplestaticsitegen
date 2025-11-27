@@ -90,30 +90,26 @@ class LinkRewriterTreeprocessor(Treeprocessor):
             return href
 
         # Blindly calculate the relativeness of the href's final destination
-        src_depth = len(self.extension.src_filename.parts)
-        dst_depth = len(href_abs.parts)
-        if self.files_as_dirs:
-            # Compensate for the subdirectory
-            dst_depth -= 1
-        depth_distance = src_depth - dst_depth
-        joiner = "./"
-        if depth_distance > 0:
-            joiner = "../" * depth_distance
+        relative_parts = href_abs.relative_to(self.extension.src_filename, walk_up=True).parts
+        relative_pathing = "/".join(relative_parts[:-1])
+        if len(relative_pathing) > 0:
+            relative_pathing += "/"
 
         dst_rel = href_abs.relative_to(self.entrypoint)
         dst_basename = str(dst_rel.name).split(".")[0]
         dst_suffixes = dst_rel.suffixes
 
+        # Remove the always-stripped file extensions
         if ".j2" in dst_suffixes:
             dst_suffixes.remove(".j2")
         if ".sssg-copy" in dst_suffixes:
             dst_suffixes.remove(".sssg-copy")
 
-        will_be_html = ".html" in dst_suffixes or ".md" in dst_suffixes
-        final_path = f"{joiner}{dst_basename}"
-        if will_be_html:
+        # Calculate the final href
+        final_path = f"{relative_pathing}{dst_basename}"
+        if ".html" in dst_suffixes or ".md" in dst_suffixes:
             if files_as_dirs:
-                final_path += "/index.html"
+                final_path += "/"
             else:
                 final_path += ".html"
         else:
