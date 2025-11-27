@@ -44,25 +44,26 @@ class Templater(object):
         self.jinja.filters["markdown"] = lambda text: Markup(self.md.convert(text))
         add_custom_filters(self.jinja.filters)
 
-    def read_metadata(self, content: str) -> tuple[str, dict[str, str]]:
+    @staticmethod
+    def read_metadata(content: str) -> tuple[str, dict[str, object]]:
         """Attempt to read metadata from a file."""
         post = frontmatter.loads(content)
-        return (post.content, post.metadata)
+        return post.content, post.metadata
 
-    def render_redirect(self, meta: dict[str, str]) -> str:
+    def render_redirect(self, meta: dict[str, object]) -> str:
         template = self.jinja.get_template("redirect.html")
         return template.render(**meta)
 
     def generate_string(
         self, content: str, source_filename: Path, dest_filename: Path, **kwargs
-    ) -> tuple[str, dict[str, str]]:
+    ) -> tuple[str, dict[str, object]]:
         """Generate output given a template string and content."""
         (con, meta) = self.read_metadata(content)
 
         # Handle load_json
         extra_data = {}
         if "load_json" in meta:
-            p = source_filename.parent / meta["load_json"]
+            p = source_filename.parent / str(meta["load_json"])
             with open(p, "r", encoding="utf-8") as f:
                 extra_data = json.load(f)
 
@@ -72,7 +73,7 @@ class Templater(object):
         template = self.jinja.from_string(con)
         template.filename = str(source_filename)
 
-        return (template.render(**kwargs, **meta, **extra_data), meta)
+        return template.render(**kwargs, **meta, **extra_data), meta
 
     def generate_html(
         self, content: str, source_filename: Path, dest_filename: Path, **kwargs

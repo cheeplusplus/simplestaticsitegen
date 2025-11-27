@@ -2,6 +2,7 @@ import base64
 import hashlib
 import hmac
 import os
+from collections.abc import Callable
 
 
 def b64encode(text: str) -> str:
@@ -36,7 +37,7 @@ def sign_sha1(value: str) -> str:
     ).decode("utf-8")
 
 
-def add_custom_filters(filters: dict[str, any]):
+def add_custom_filters(filters: dict[str, Callable[[str], str]]):
     filters["b64decode"] = b64decode
     filters["b64encode"] = b64encode
     filters["sign_sha1"] = sign_sha1

@@ -1,7 +1,7 @@
 from pathlib import Path
 from markdown import Extension
 from markdown.treeprocessors import Treeprocessor
-import xml.etree.ElementTree as etree
+import xml.etree.ElementTree as eTree
 
 from typing import Optional
 
@@ -42,7 +42,7 @@ class LinkRewriterTreeprocessor(Treeprocessor):
             Path(entrypoint) if entrypoint and len(entrypoint) > 0 else None
         )
 
-    def run(self, root: etree.Element) -> None:
+    def run(self, root: eTree.Element) -> None:
         for child in root.iter("a"):
             href = child.get("href")
             converted_path = self.get_converted_path(href)
