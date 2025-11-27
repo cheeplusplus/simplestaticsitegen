@@ -91,7 +91,7 @@ class LinkRewriterTreeprocessor(Treeprocessor):
 
         # Blindly calculate the relativeness of the href's final destination
         relative_parts = list(href_abs.relative_to(self.extension.src_filename.parent, walk_up=True).parts)
-        if self.files_as_dirs:
+        if self.files_as_dirs and not self.extension.src_filename.name.startswith("index."):
             # Add an extra 'up'
             relative_parts.insert(0, "..")
         relative_pathing = "/".join(relative_parts[:-1])
