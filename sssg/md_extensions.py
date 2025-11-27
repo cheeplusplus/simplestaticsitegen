@@ -45,7 +45,7 @@ class LinkRewriterTreeprocessor(Treeprocessor):
     def run(self, root: eTree.Element) -> None:
         for child in root.iter("a"):
             href = child.get("href")
-            converted_path = self.get_converted_path(href, self.files_as_dirs)
+            converted_path = self.get_converted_path(href)
             if converted_path != href:
                 child.set("href", converted_path)
         for child in root.iter("img"):
@@ -54,7 +54,7 @@ class LinkRewriterTreeprocessor(Treeprocessor):
             if converted_path != href:
                 child.set("src", converted_path)
 
-    def get_converted_path(self, href: str, files_as_dirs: bool = False) -> str:
+    def get_converted_path(self, href: str) -> str:
         if (
             not self.extension.src_filename
             or not self.extension.dst_filename
@@ -90,13 +90,16 @@ class LinkRewriterTreeprocessor(Treeprocessor):
             return href
 
         # Blindly calculate the relativeness of the href's final destination
-        relative_parts = href_abs.relative_to(self.extension.src_filename, walk_up=True).parts
+        relative_parts = list(href_abs.relative_to(self.extension.src_filename.parent, walk_up=True).parts)
+        if self.files_as_dirs:
+            # Add an extra 'up'
+            relative_parts.insert(0, "..")
         relative_pathing = "/".join(relative_parts[:-1])
-        if len(relative_pathing) > 0:
-            relative_pathing += "/"
+        if len(relative_pathing) == 0:
+            # Same parent dir
+            relative_pathing = "."
 
         dst_rel = href_abs.relative_to(self.entrypoint)
-        dst_basename = str(dst_rel.name).split(".")[0]
         dst_suffixes = dst_rel.suffixes
 
         # Remove the always-stripped file extensions
@@ -106,13 +109,15 @@ class LinkRewriterTreeprocessor(Treeprocessor):
             dst_suffixes.remove(".sssg-copy")
 
         # Calculate the final href
-        final_path = f"{relative_pathing}{dst_basename}"
+        dst_basename = str(dst_rel.name).split(".")[0]
         if ".html" in dst_suffixes or ".md" in dst_suffixes:
-            if files_as_dirs:
-                final_path += "/"
+            if not self.files_as_dirs:
+                final_path = f"{relative_pathing}/{dst_basename}.html"
+            elif dst_basename == "index":
+                final_path = f"{relative_pathing}/"
             else:
-                final_path += ".html"
+                final_path = f"{relative_pathing}/{dst_basename}/"
         else:
-            final_path += ".".join(dst_suffixes)
+            final_path = f"{relative_pathing}/{dst_basename}" + ".".join(dst_suffixes)
 
         return final_path
