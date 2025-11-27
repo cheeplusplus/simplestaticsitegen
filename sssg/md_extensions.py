@@ -11,18 +11,16 @@ class LinkRewriterExtension(Extension):
         self.src_filename: Optional[Path] = None
         self.dst_filename: Optional[Path] = None
         self.config = {
-            "files_as_dirs": [
-                False, "True if files_as_dirs is enabled"
-            ],
-            "entrypoint": [
-                "", "Entry path for the templater"
-            ]
+            "files_as_dirs": [False, "True if files_as_dirs is enabled"],
+            "entrypoint": ["", "Entry path for the templater"],
         }
         super().__init__(**kwargs)
 
     def extendMarkdown(self, md):
         md.registerExtension(self)
-        md.treeprocessors.register(LinkRewriterTreeprocessor(self), "linkrewriter", 10)  # before LinkInlineProcessor
+        md.treeprocessors.register(
+            LinkRewriterTreeprocessor(self), "linkrewriter", 10
+        )  # before LinkInlineProcessor
 
     def set_current_filenames(self, src: Path, dst: Path):
         """Override the current filenames."""
@@ -40,10 +38,14 @@ class LinkRewriterTreeprocessor(Treeprocessor):
         self.files_as_dirs: bool = self.extension.getConfig("files_as_dirs", False)
 
         entrypoint: str = self.extension.getConfig("entrypoint", "")
-        self.entrypoint: Optional[Path] = Path(entrypoint) if entrypoint and len(entrypoint) > 0 else None
+        self.entrypoint: Optional[Path] = (
+            Path(entrypoint) if entrypoint and len(entrypoint) > 0 else None
+        )
 
         exitpoint: str = self.extension.getConfig("exitpoint", "")
-        self.exitpoint: Optional[Path] = Path(exitpoint) if exitpoint and len(exitpoint) > 0 else None
+        self.exitpoint: Optional[Path] = (
+            Path(exitpoint) if exitpoint and len(exitpoint) > 0 else None
+        )
 
     def run(self, root: etree.Element) -> None:
         for child in root.iter("a"):
@@ -53,7 +55,11 @@ class LinkRewriterTreeprocessor(Treeprocessor):
                 child.set("href", converted_path)
 
     def get_converted_path(self, href: str) -> str:
-        if not self.extension.src_filename or not self.extension.dst_filename or not self.entrypoint:
+        if (
+            not self.extension.src_filename
+            or not self.extension.dst_filename
+            or not self.entrypoint
+        ):
             # Not configured for translation
             return href
         if "://" in href:
@@ -66,11 +72,19 @@ class LinkRewriterTreeprocessor(Treeprocessor):
             # It's also probably invalid, but we're not going to worry about that here
             return href
 
-        href_abs = (self.extension.src_filename.parent / href_local).resolve().absolute()
+        href_abs = (
+            (self.extension.src_filename.parent / href_local).resolve().absolute()
+        )
         try:
             # If the file doesn't exist, don't attempt to rewrite it
             if not href_abs.exists():
-                print(" > In", self.extension.src_filename, "link to", href, "does not exist.")
+                print(
+                    " > In",
+                    self.extension.src_filename,
+                    "link to",
+                    href,
+                    "does not exist.",
+                )
                 return href
         except IOError:
             return href

@@ -4,7 +4,7 @@ verify_ssl = true
 name = "pypi"
 
 [scripts]
-format = "flake8 sssg"
+format = "flake8 sssg setup.py"
 
 [packages]
 "jinja2" = "==3.1.6"
@@ -16,3 +16,4 @@ pymdown-extensions = "==10.17.1"
 [dev-packages]
 "flake8" = "*"
 "setuptools" = "*"
+flake8-black = "*"

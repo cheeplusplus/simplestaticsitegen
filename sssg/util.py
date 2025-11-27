@@ -9,9 +9,10 @@ class BuildError(Exception):
         Exception.__init__(self, message)
 
 
-def restructure_file_as_dir(files_as_dirs: bool, current_path: Path, current_height=0, new_filename="index.html") -> \
-        tuple[Path, str]:
-    '''Restructure "file.md" as "file/index.html", imitating Jekyll'''
+def restructure_file_as_dir(
+    files_as_dirs: bool, current_path: Path, current_height=0, new_filename="index.html"
+) -> tuple[Path, str]:
+    """Restructure "file.md" as "file/index.html", imitating Jekyll"""
 
     basedir = current_path.parent
     filename = current_path.stem
@@ -35,9 +36,12 @@ def restructure_file_as_dir(files_as_dirs: bool, current_path: Path, current_hei
     return target_dir / new_filename, ptr
 
 
-def find_files(start_dir: Path, ignore_paths: Optional[Iterable[str]] = None, relative_path: str = "") -> \
-        Generator[Path, None, None]:
-    '''Find files in the source directory.'''
+def find_files(
+    start_dir: Path,
+    ignore_paths: Optional[Iterable[str]] = None,
+    relative_path: str = "",
+) -> Generator[Path, None, None]:
+    """Find files in the source directory."""
 
     ignore_these: list[Callable[[str], bool]] = []
     if ignore_paths is not None:
@@ -58,5 +62,12 @@ def find_files(start_dir: Path, ignore_paths: Optional[Iterable[str]] = None, re
                 continue
 
             yield entry
-        if entry.is_dir() and entry.name != "." and entry.name != ".." and entry.name != ".templates":
-            yield from find_files(entry, ignore_paths=ignore_paths, relative_path=relative_file)
+        if (
+            entry.is_dir()
+            and entry.name != "."
+            and entry.name != ".."
+            and entry.name != ".templates"
+        ):
+            yield from find_files(
+                entry, ignore_paths=ignore_paths, relative_path=relative_file
+            )

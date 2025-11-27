@@ -24,9 +24,7 @@ setuptools.setup(
         "markdown",
         "pymdown-extensions",
         "python-frontmatter",
-        "pathmatch"
+        "pathmatch",
     ],
-    entry_points={
-        "console_scripts": ["sssg = sssg.__main__:main"]
-    }
+    entry_points={"console_scripts": ["sssg = sssg.__main__:main"]},
 )
