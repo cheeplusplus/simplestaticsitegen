@@ -49,15 +49,14 @@ class Templater(object):
         template = self.jinja.get_template("redirect.html")
         return template.render(**meta)
 
-    def generate_string(self, content: str, source_filename: Path, dest_filename: Path, **kwargs) -> tuple[
-        str, dict[str, str]]:
+    def generate_string(self, content: str, source_filename: Path, dest_filename: Path, **kwargs) -> tuple[str, dict[str, str]]:
         '''Generate output given a template string and content.'''
         (con, meta) = self.read_metadata(content)
 
         # Handle load_json
         extra_data = {}
         if "load_json" in meta:
-            p = os.path.join(os.path.dirname(source_filename), meta["load_json"])
+            p = source_filename.parent / meta["load_json"]
             with open(p, "r", encoding="utf-8") as f:
                 extra_data = json.load(f)
 

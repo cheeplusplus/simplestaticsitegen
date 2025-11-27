@@ -2,8 +2,6 @@ import shutil
 from pathlib import Path
 from typing import Optional
 from urllib import parse, request
-from .filters import add_custom_filters
-from .md_extensions import LinkRewriterExtension
 from .templater import Templater
 from .util import restructure_file_as_dir, find_files, BuildError
 

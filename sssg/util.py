@@ -1,4 +1,3 @@
-import typing
 from collections.abc import Callable
 from pathlib import Path
 from pathmatch import gitmatch
