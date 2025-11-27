@@ -94,7 +94,7 @@ def process_directory(
         # Make sure it exists
         curr_dest_dir = curr_dest_file.parent
         if not curr_dest_dir.is_dir():
-            curr_dest_dir.mkdir(exist_ok=True)
+            curr_dest_dir.mkdir(parents=True, exist_ok=True)
 
         if debug:
             print(f" > {curr_src_file}")
