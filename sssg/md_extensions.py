@@ -42,11 +42,6 @@ class LinkRewriterTreeprocessor(Treeprocessor):
             Path(entrypoint) if entrypoint and len(entrypoint) > 0 else None
         )
 
-        exitpoint: str = self.extension.getConfig("exitpoint", "")
-        self.exitpoint: Optional[Path] = (
-            Path(exitpoint) if exitpoint and len(exitpoint) > 0 else None
-        )
-
     def run(self, root: etree.Element) -> None:
         for child in root.iter("a"):
             href = child.get("href")
