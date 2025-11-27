@@ -9,6 +9,7 @@ def main():
     parser.add_argument("-d", "--delete", action="store_true", help="Delete contents of destination directory before copying")
     parser.add_argument("--files-as-dirs", action="store_true", help="Turn templated files into directories (Jekyll style)")
     parser.add_argument("-i", "--ignore", action="store", help="Ignore glob (gitignore style, comma seperated)")
+    parser.add_argument("-v", "--verbose", action="store_true", help="Verbose output")
 
     args = parser.parse_args()
 
@@ -17,7 +18,7 @@ def main():
         ignore_paths = args.ignore.split(",")
 
     print("Processing.")
-    process_directory(args.source, args.destination, files_as_dirs=args.files_as_dirs, wipe_first=args.delete, ignore_paths=ignore_paths)
+    process_directory(args.source, args.destination, files_as_dirs=args.files_as_dirs, wipe_first=args.delete, ignore_paths=ignore_paths, debug=args.verbose)
     print("Done.")
 
 
