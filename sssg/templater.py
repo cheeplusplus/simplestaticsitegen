@@ -5,7 +5,7 @@ from markdown import Markdown
 from markupsafe import Markup
 import frontmatter
 from pathlib import Path
-from .filters import add_custom_filters
+from .jinja_filters import add_custom_filters
 from .md_extensions import LinkRewriterExtension
 
 
